@@ -13,8 +13,11 @@ def dispatcher(host, port):
     sock.listen(5)
 
     while True:
+        # Aqui a thread principal vai bloquear até que um cliente se conecte ao
+        # servidor:
         client, address = sock.accept()
         client.settimeout(60)
+        # A nova conexão é passada para uma thread no thread pool:
         thread_pool.apply_async(process_request, (client, address))
 
 
@@ -22,6 +25,8 @@ def process_request(client, address, size=1024):
     print(f"Thread: {current_thread()}, Client: {client}, "
           f"Address: {address}")
 
+    # O processamento do request é sequencial: lemos os dados, e escrevemos a
+    # reposta:
     while True:
         try:
             data = client.recv(size)

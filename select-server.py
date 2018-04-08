@@ -18,6 +18,12 @@ class EventLoop(object):
         self._inputs.append(self._server)
 
         while self._inputs:
+            # Passamos três listas de sockets: uma de sockets para ler, uma de
+            # sockets pra escrever, uma de sockets para esperar por erros.
+            # select vai esperar até que algum socket em alguma dessas listas
+            # esteja pronto para fazer o tipo de IO indicado pela ordem dos
+            # parâmetros, e retornar os sockets prontos para cada tipo de IO nas
+            # listas readable, writable e errors:
             readable, writable, errors = select.select(
                 self._inputs,
                 self._outputs,
@@ -66,6 +72,8 @@ class EventLoop(object):
         try:
             next_msg = self._queues[sock].get_nowait()
         except Empty:
+            # Se não tem nada para enviar para o socket, podemos fechar a
+            # conexão:
             self._outputs.remove(sock)
             self._inputs.remove(sock)
             del self._queues[sock]
